@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zi CSV Generator (Upload Massal)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        /* Custom scrollbar for better dark theme integration */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4338ca; /* bg-indigo-700 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5; /* bg-indigo-600 */
+        }
+    </style>
+</head>
+<body class="bg-[#0B0F19] text-gray-300 min-h-screen font-sans antialiased relative overflow-x-hidden">
+    <!-- Background Gradients & Grid -->
+    <div class="absolute top-0 left-0 w-full h-full z-0 overflow-hidden">
+        <div class="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] bg-blue-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSJub25lIi8+PHBhdGggZD0iTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAiIHN0cm9rZT0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')] opacity-50"></div>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto flex flex-col min-h-screen p-4 sm:p-6 lg:p-8 w-full">
+        <header class="text-center my-12">
+            <div class="inline-block bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-full px-4 py-1 mb-4">
+                <p class="text-sm text-purple-300">Welcome to Zi CSV Generator ✨</p>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 leading-tight">
+                Revolutionize Your CSV Creation
+            </h1>
+            <p class="mt-4 text-lg max-w-2xl mx-auto text-gray-400">
+                Boost your creative workflow. Upload your images and let AI generate compelling keywords and categories in seconds.
+            </p>
+        </header>
+
+        <main class="flex-grow w-full">
+            <div class="bg-gray-900/50 backdrop-blur-lg border border-white/10 rounded-2xl p-6 mb-12">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <p class="text-gray-300">Start by uploading your images here.</p>
+                    <label for="image-upload" class="flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-purple-600 border border-transparent rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 focus:ring-offset-gray-900 transition-all duration-300 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="w-6 h-6 mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                        Upload Images
+                    </label>
+                    <input id="image-upload" type="file" class="hidden" multiple accept="image/png, image/jpeg, image/webp" />
+                </div>
+            </div>
+            
+            <!-- Action buttons will appear here if images are selected -->
+            <div id="action-buttons" class="hidden flex-wrap justify-center items-center gap-4 mb-12">
+                <button id="generate-btn" class="flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-purple-600 border border-transparent rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 focus:ring-offset-gray-900 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-all duration-300 min-w-[180px]">
+                    <div class="spinner w-6 h-6 border-b-2 border-white hidden mr-2"></div>
+                    <span id="btn-text">Generate Data</span>
+                </button>
+                <button id="download-csv-btn" class="flex items-center justify-center px-6 py-3 text-base font-medium text-gray-200 bg-transparent border border-white/20 rounded-full shadow-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 focus:ring-offset-gray-900 disabled:bg-gray-500/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300">
+                    Download CSV
+                </button>
+                 <button id="clear-all-btn" class="flex items-center justify-center px-6 py-3 text-base font-medium text-gray-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 bg-transparent border border-white/20 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 focus:ring-offset-gray-900 disabled:opacity-50 transition-all duration-300">
+                    Clear All
+                </button>
+            </div>
+
+            <!-- Message Box -->
+            <div id="message-box" class="hidden text-center p-4 mb-4 text-sm rounded-lg max-w-2xl mx-auto" role="alert">
+              <span class="font-medium" id="message-text"></span>
+            </div>
+
+            <!-- Results Table as Cards -->
+            <div id="results-section" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Image cards will be inserted here -->
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 py-6 border-t border-white/10">
+            <p class="text-sm text-gray-500">
+                Prompt by : <a href="http://instagram.com/dzakariazizi" target="_blank" rel="noopener noreferrer" class="underline hover:text-purple-400 transition-colors">dzakariazizi</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const imageUpload = document.getElementById('image-upload');
+        const generateBtn = document.getElementById('generate-btn');
+        const btnText = document.getElementById('btn-text');
+        const spinner = generateBtn.querySelector('.spinner');
+        const downloadCsvBtn = document.getElementById('download-csv-btn');
+        const clearAllBtn = document.getElementById('clear-all-btn');
+        const actionButtonsContainer = document.getElementById('action-buttons');
+        const resultsSection = document.getElementById('results-section');
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+
+        // --- State Management ---
+        let generatedData = [];
+        let filesToProcess = [];
+
+        // --- Event Listeners ---
+        imageUpload.addEventListener('change', handleImageUpload);
+        generateBtn.addEventListener('click', handleGenerateClick);
+        downloadCsvBtn.addEventListener('click', handleDownloadCsv);
+        clearAllBtn.addEventListener('click', handleClearAll);
+
+        // --- Functions ---
+
+        function handleClearAll() {
+            generatedData = [];
+            filesToProcess = [];
+            imageUpload.value = '';
+            resultsSection.innerHTML = '';
+            actionButtonsContainer.classList.add('hidden');
+        }
+
+        function handleImageUpload(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                filesToProcess = Array.from(files);
+                renderImagePlaceholders();
+                actionButtonsContainer.classList.remove('hidden');
+                showMessage(`${files.length} gambar dipilih. Klik "Generate Data" untuk memulai.`, 'success');
+            } else {
+                filesToProcess = [];
+                actionButtonsContainer.classList.add('hidden');
+            }
+        }
+        
+        function renderImagePlaceholders() {
+            resultsSection.innerHTML = '';
+            filesToProcess.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const card = createImageCard(file.name, e.target.result, index);
+                    resultsSection.appendChild(card);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        function createImageCard(fileName, dataUrl, index) {
+            const card = document.createElement('div');
+            card.id = `card-${index}`;
+            card.className = "bg-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-1 transition-transform duration-300";
+            card.innerHTML = `
+                <div class="relative">
+                    <img src="${dataUrl}" alt="Preview" class="w-full h-48 object-cover" />
+                    <div class="absolute inset-0 bg-black/60 flex-col items-center justify-center hidden">
+                        <div class="spinner w-8 h-8 border-b-2 border-white"></div>
+                        <p class="text-xs mt-2 text-gray-300">Generating...</p>
+                    </div>
+                </div>
+                <div class="p-4 min-h-[100px] flex flex-col justify-between">
+                    <p class="text-sm text-gray-400 truncate" title="${fileName}">${fileName}</p>
+                    <p class="text-xs text-gray-500 mt-1">Waiting to be generated...</p>
+                </div>
+            `;
+            return card;
+        }
+
+        async function handleGenerateClick() {
+            if (filesToProcess.length === 0) {
+                showMessage('Harap unggah gambar terlebih dahulu.', 'error');
+                return;
+            }
+
+            const totalFiles = filesToProcess.length;
+            toggleLoading(true, 0, totalFiles);
+            generatedData = []; // Clear previous data
+
+            for (let i = 0; i < totalFiles; i++) {
+                const file = filesToProcess[i];
+                const card = document.getElementById(`card-${i}`);
+                const statusOverlay = card.querySelector('.relative > div');
+                const resultText = card.querySelector('.p-4 > p:last-child');
+                
+                statusOverlay.classList.remove('hidden');
+                statusOverlay.classList.add('flex');
+                toggleLoading(true, i + 1, totalFiles);
+
+                try {
+                    const base64 = await fileToBase64(file);
+                    const title = file.name.replace(/\.[^/.]+$/, "");
+                    const aiResult = await processImageWithAI(title, base64);
+                    
+                    const newData = {
+                        Filename: file.name,
+                        Title: title,
+                        Keywords: aiResult.keywords,
+                        Category: aiResult.category,
+                        Releases: ''
+                    };
+                    generatedData.push(newData);
+                    resultText.className = 'text-xs text-green-400 mt-1';
+                    resultText.textContent = 'Success!';
+
+                } catch (error) {
+                    console.error(`Gagal memproses file ${file.name}:`, error);
+                    const errorData = {
+                        Filename: file.name,
+                        Title: file.name.replace(/\.[^/.]+$/, ""),
+                        Keywords: `Error: ${error.message}`,
+                        Category: 'ERROR',
+                        Releases: ''
+                    };
+                    generatedData.push(errorData);
+                    resultText.className = 'text-xs text-red-400 mt-1';
+                    resultText.textContent = `Error: ${error.message}`;
+                } finally {
+                    statusOverlay.classList.add('hidden');
+                    statusOverlay.classList.remove('flex');
+                }
+            }
+
+            toggleLoading(false);
+            showMessage(`Selesai memproses ${totalFiles} gambar.`, 'success');
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function processImageWithAI(title, base64ImageData) {
+            const prompt = `
+                You are an expert SEO specialist and image analyst for a stock photo marketplace. Your task is to generate keywords and categorize an image.
+                **Image Title:** "${title}"
+                **Instructions:**
+                1.  **Analyze the Image:** Carefully analyze the provided image and its title.
+                2.  **Generate Keywords:** Create up to 30 relevant, commercially valuable keywords in English. Start with the most important subjects, repeat keywords from the title, then add broader concepts.
+                3.  **Categorize the Image:** Choose the single most appropriate category for the image from the list below.
+                4.  **Category List:**
+                    1. Animals, 2. Buildings and Architecture, 3. Business, 4. Drinks, 5. The Environment, 6. States of Mind, 7. Food, 8. Graphic Resources, 9. Hobbies and Leisure, 10. Industry, 11. Landscapes, 12. Lifestyle, 13. People, 14. Plants and Flowers, 15. Culture and Religion, 16. Science, 17. Social Issues, 18. Sports, 19. Technology, 20. Transport, 21. Travel
+                5.  **Format Your Response as JSON:** You MUST return a single, valid JSON object with two keys: "keywords" (a string of comma-separated keywords) and "category" (the corresponding number of the chosen category).
+                **Example JSON Response:**
+                { "keywords": "sunset, beach, ocean, tropical, vacation, landscape, water, orange, sky, nature, sea, coast, travel, beautiful, summer, dusk, scenic, island, paradise, holiday", "category": 11 }
+            `;
+            const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64ImageData } }] }] };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error(`API call failed with status: ${response.status}`);
+            const result = await response.json();
+            try {
+                const textResponse = result.candidates[0].content.parts[0].text;
+                const cleanJsonString = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsedJson = JSON.parse(cleanJsonString);
+                if (parsedJson.keywords && parsedJson.category) return parsedJson;
+                throw new Error("Invalid JSON structure from AI.");
+            } catch (e) {
+                console.error("Failed to parse JSON from AI response:", e);
+                throw new Error("Could not parse AI response.");
+            }
+        }
+
+        function handleDownloadCsv() {
+            if (generatedData.length === 0) {
+                showMessage('Tidak ada data untuk diunduh. Generate data terlebih dahulu.', 'error');
+                return;
+            }
+            const headers = ['Filename', 'Title', 'Keywords', 'Category', 'Releases'];
+            const delimiter = ';';
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += headers.map(h => `"${h}"`).join(delimiter) + '\r\n';
+            generatedData.forEach(row => {
+                const values = headers.map(header => `"${('' + row[header]).replace(/"/g, '""')}"`);
+                csvContent += values.join(delimiter) + '\r\n';
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Zi_CSV_Generator_Data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function toggleLoading(isLoading, current = 0, total = 0) {
+            generateBtn.disabled = isLoading;
+            clearAllBtn.disabled = isLoading;
+            if (isLoading) {
+                spinner.classList.remove('hidden');
+                if (total > 0) {
+                    btnText.textContent = `Processing ${current}/${total}`;
+                } else {
+                    btnText.textContent = `Processing...`;
+                }
+            } else {
+                spinner.classList.add('hidden');
+                btnText.textContent = 'Generate Data';
+            }
+        }
+
+        function showMessage(text, type) {
+            messageText.textContent = text;
+            messageBox.className = 'text-center p-4 mb-4 text-sm rounded-lg max-w-2xl mx-auto';
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-900/50', 'text-green-300', 'border', 'border-green-500/30');
+            } else {
+                messageBox.classList.add('bg-red-900/50', 'text-red-300', 'border', 'border-red-500/30');
+            }
+            messageBox.classList.remove('hidden');
+            setTimeout(() => { messageBox.classList.add('hidden'); }, 4000);
+        }
+    </script>
+</body>
+</html>
